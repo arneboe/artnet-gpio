@@ -41,10 +41,7 @@ void setupNetwork(Config *cfg)
   Serial.print("Broadcast IP: ");
   Serial.println(WiFi.broadcastIP());
 
-  // Initialize mDNS with MAC address
-  String macAddress = WiFi.macAddress();
-  macAddress.replace(":", ""); // Remove colons from MAC
-  String hostname = "artnet-gpio-" + macAddress;
+  String hostname = "artnet-gpio-" + String(ESP.getEfuseMac(), HEX);
 
   if (!MDNS.begin(hostname.c_str()))
   {
@@ -58,7 +55,7 @@ void setupNetwork(Config *cfg)
   MDNS.addService("artnet", "udp", 6454);
 
   Serial.print("mDNS name: ");
-  Serial.println(hostname);
+  Serial.println(hostname + ".local");
 }
 
 void setup()
@@ -75,10 +72,11 @@ void setup()
   const auto targetIp = WiFi.broadcastIP();
   network = new Network(config->getUniverse(), targetIp.toString());
 
-  ioHandler = new IOHandler([](uint8_t pin, bool value)
-                            { network->setChannel(pin, value ? 255 : 0); });
+  ioHandler = new IOHandler();
+  ioHandler->addChangedCb([](uint8_t pin, uint8_t index, bool value)
+                          { network->setChannel(index, value ? 255 : 0); });
 
-  ui = new Ui({13}, config);
+  ui = new Ui(ioHandler, config);
 }
 
 void loop()

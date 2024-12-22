@@ -1,11 +1,13 @@
 #include "Ui.hpp"
 #include <ESPUI.h>
 
-Ui::Ui(const std::array<uint8_t, 8> &availablePins, Config *cfg) : cfg{cfg}
+Ui::Ui(IOHandler *ioHandler, Config *cfg) : cfg{cfg}
 {
     const auto networkGroupId = ESPUI.addControl(ControlType::Tab, "Network Configuration", "Network Configuration");
 
-    ESPUI.addControl(ControlType::Label, "Info", "Changes to the network configuration will take effect after restart.", ControlColor::None, networkGroupId);
+    ESPUI.addControl(ControlType::Label, "Info", "Changes to the configuration will take effect after restart.", ControlColor::None);
+    ESPUI.addControl(ControlType::Button, "Restart", "Restart", ControlColor::Carrot, Control::noParent, [](Control *sender, int type)
+                     { ESP.restart(); });
 
     ESPUI.addControl(ControlType::Switcher, "use DHCP", cfg->getUseDHCP() ? "1" : "0", ControlColor::None, networkGroupId, [this](Control *sender, int type)
                      { this->cfg->setUseDHCP(sender->value.toInt() == 1); });
@@ -102,9 +104,6 @@ Ui::Ui(const std::array<uint8_t, 8> &availablePins, Config *cfg) : cfg{cfg}
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway3);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway3);
 
-    ESPUI.addControl(ControlType::Button, "Restart", "Restart", ControlColor::Carrot, networkGroupId, [](Control *sender, int type)
-                     { ESP.restart(); });
-
     // Universe control
     const auto universeCtrl = ESPUI.addControl(ControlType::Number, "Universe", String(cfg->getUniverse()), ControlColor::None, networkGroupId, [this](Control *sender, int type)
                                                { this->cfg->setUniverse(sender->value.toInt()); });
@@ -112,6 +111,23 @@ Ui::Ui(const std::array<uint8_t, 8> &availablePins, Config *cfg) : cfg{cfg}
     ESPUI.addControl(ControlType::Max, "", String(32767), ControlColor::None, universeCtrl);
 
     const auto pingGroupId = ESPUI.addControl(ControlType::Tab, "Pin Configuration", "Pin Configuration");
+
+    // Add entries for each configured pin
+    const auto &pins = ioHandler->getIOConfig();
+    for (size_t i = 0; i < pins.size(); i++)
+    {
+        const auto labelGrp = ESPUI.addControl(ControlType::Label, "", "Pin " + String(pins[i].pin) + " (DMX Address " + String(i) + ")", ControlColor::None, pingGroupId);
+
+        pinStatusLabels[i] = ESPUI.addControl(ControlType::Label, "Status",
+                                              pins[i].currentValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>" : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>",
+                                              ControlColor::None, labelGrp);
+    }
+
+    // Register callback to update labels when pins change
+    ioHandler->addChangedCb([this](uint8_t pin, uint8_t index, bool newValue)
+                            { ESPUI.updateLabel(this->pinStatusLabels[index],
+                                                newValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>"
+                                                         : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>"); });
 
     ESPUI.begin("ArtNet GPIO");
 }
