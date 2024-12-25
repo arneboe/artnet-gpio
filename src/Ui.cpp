@@ -4,7 +4,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 {
     cfg = _cfg;
 
-    const auto networkGroupId = ESPUI.addControl(ControlType::Tab, "Network Configuration", "Network Configuration");
+    const auto networkGroupId = ESPUI.addControl(ControlType::Tab, "Network", "Network");
 
     ESPUI.addControl(ControlType::Label, "Info", "Changes will take effect after restart.", ControlColor::None);
     ESPUI.addControl(ControlType::Button, "Restart", "Restart", ControlColor::Carrot, Control::noParent, [](Control *sender, int type)
@@ -18,120 +18,64 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 
     // Static IP controls
     const IPAddress &ip = cfg->getStaticIp();
-    const auto staticIpGrp = ESPUI.addControl(ControlType::Number, "Static IP", String(ip[0]), ControlColor::None, networkGroupId, [this](Control *sender, int type)
+    const auto staticIpGrp = ESPUI.addControl(ControlType::Text, "Static IP", ip.toString(), ControlColor::None, networkGroupId, [this](Control *sender, int type)
                                               {
-        auto ip = cfg->getStaticIp();
-        ip[0] = sender->value.toInt();
-        cfg->setStaticIp(ip); });
+                                                 String newValue = sender->value;
+                                                 IPAddress newIp;
+                                                 if (newIp.fromString(newValue))
+                                                 {
+                                                     cfg->setStaticIp(newIp);
+                                                 } });
     networkControls.push_back(staticIpGrp);
 
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, staticIpGrp);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, staticIpGrp);
-    const auto static1 = ESPUI.addControl(ControlType::Number, "", String(ip[1]), ControlColor::None, staticIpGrp, [this](Control *sender, int type)
-                                          {
-        auto ip = cfg->getStaticIp();
-        ip[1] = sender->value.toInt();
-        cfg->setStaticIp(ip); });
-    networkControls.push_back(static1);
-
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static1);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static1);
-    const auto static2 = ESPUI.addControl(ControlType::Number, "", String(ip[2]), ControlColor::None, staticIpGrp, [this](Control *sender, int type)
-                                          {
-        auto ip = cfg->getStaticIp();
-        ip[2] = sender->value.toInt();
-        cfg->setStaticIp(ip); });
-    networkControls.push_back(static2);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static2);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static2);
-
-    const auto static3 = ESPUI.addControl(ControlType::Number, "", String(ip[3]), ControlColor::None, staticIpGrp, [this](Control *sender, int type)
-                                          {
-        auto ip = cfg->getStaticIp();
-        ip[3] = sender->value.toInt();
-        cfg->setStaticIp(ip); });
-    networkControls.push_back(static3);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static3);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static3);
-
     const IPAddress &subnet = cfg->getStaticSubnet();
-    const auto subnetGrp = ESPUI.addControl(ControlType::Number, "Static Subnet Mask", String(subnet[0]), ControlColor::None, networkGroupId, [this](Control *sender, int type)
+    const auto subnetGrp = ESPUI.addControl(ControlType::Text, "Static Subnet Mask", subnet.toString(), ControlColor::None, networkGroupId, [this](Control *sender, int type)
                                             {
-        auto subnet = cfg->getStaticSubnet();
-        subnet[0] = sender->value.toInt();
-        cfg->setStaticSubnet(subnet); });
-
+                                               String newValue = sender->value;
+                                               IPAddress newSubnet;
+                                               if (newSubnet.fromString(newValue))
+                                               {
+                                                   cfg->setStaticSubnet(newSubnet);
+                                               } });
     networkControls.push_back(subnetGrp);
 
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnetGrp);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnetGrp);
-    const auto subnet1 = ESPUI.addControl(ControlType::Number, "", String(subnet[1]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
-                                          {
-        auto subnet = cfg->getStaticSubnet();
-        subnet[1] = sender->value.toInt();
-        cfg->setStaticSubnet(subnet); });
-    networkControls.push_back(subnet1);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet1);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet1);
-    const auto subnet2 = ESPUI.addControl(ControlType::Number, "", String(subnet[2]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
-                                          {
-        auto subnet = cfg->getStaticSubnet();
-        subnet[2] = sender->value.toInt();
-        cfg->setStaticSubnet(subnet); });
-    networkControls.push_back(subnet2);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet2);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet2);
-    const auto subnet3 = ESPUI.addControl(ControlType::Number, "", String(subnet[3]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
-                                          {
-        auto subnet = cfg->getStaticSubnet();
-        subnet[3] = sender->value.toInt();
-        cfg->setStaticSubnet(subnet); });
-    networkControls.push_back(subnet3);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet3);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet3);
-
     const IPAddress &gateway = cfg->getStaticGateway();
-    const auto gatewayGrp = ESPUI.addControl(ControlType::Number, "Static Gateway", String(gateway[0]), ControlColor::None, networkGroupId, [this](Control *sender, int type)
+    const auto gatewayGrp = ESPUI.addControl(ControlType::Text, "Static Gateway", gateway.toString(), ControlColor::None, networkGroupId, [this](Control *sender, int type)
                                              {
-        auto gateway = cfg->getStaticGateway();
-        gateway[0] = sender->value.toInt();
-        cfg->setStaticGateway(gateway); });
+                                                String newValue = sender->value;
+                                                IPAddress newGateway;
+                                                if (newGateway.fromString(newValue))
+                                                {
+                                                    cfg->setStaticGateway(newGateway);
+                                                } });
     networkControls.push_back(gatewayGrp);
 
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gatewayGrp);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gatewayGrp);
-    const auto gateway1 = ESPUI.addControl(ControlType::Number, "", String(gateway[1]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
-                                           {
-        auto gateway = cfg->getStaticGateway();
-        gateway[1] = sender->value.toInt();
-        cfg->setStaticGateway(gateway); });
-    networkControls.push_back(gateway1);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway1);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway1);
-    const auto gateway2 = ESPUI.addControl(ControlType::Number, "", String(gateway[2]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
-                                           {
-        auto gateway = cfg->getStaticGateway();
-        gateway[2] = sender->value.toInt();
-        cfg->setStaticGateway(gateway); });
-    networkControls.push_back(gateway2);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway2);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway2);
-    const auto gateway3 = ESPUI.addControl(ControlType::Number, "", String(gateway[3]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
-                                           {
-        auto gateway = cfg->getStaticGateway();
-        gateway[3] = sender->value.toInt();
-        cfg->setStaticGateway(gateway); });
-    networkControls.push_back(gateway3);
-    ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway3);
-    ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway3);
-
-    // Universe control
-    const auto universeCtrl = ESPUI.addControl(ControlType::Number, "Universe", String(cfg->getUniverse()), ControlColor::None, networkGroupId, [this](Control *sender, int type)
+    const auto artnetTabId = ESPUI.addControl(ControlType::Tab, "Artnet", "Artnet");
+    const auto universeCtrl = ESPUI.addControl(ControlType::Number, "Universe", String(cfg->getUniverse()), ControlColor::None, artnetTabId, [this](Control *sender, int type)
                                                { cfg->setUniverse(sender->value.toInt()); });
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, universeCtrl);
     ESPUI.addControl(ControlType::Max, "", String(32767), ControlColor::None, universeCtrl);
 
-    const auto pingGroupId = ESPUI.addControl(ControlType::Tab, "Pin Configuration", "Pin Configuration");
+    ESPUI.addControl(ControlType::Switcher, "use unicast", cfg->getUseUnicast() ? "1" : "0", ControlColor::None, artnetTabId, [this](Control *sender, int type)
+                     {
+                        const bool use = sender->value.toInt() == 1;
+                        cfg->setUseUnicast(use);
+                        enableUnicastConfig(use); });
+
+    const IPAddress &unicastIp = cfg->getUnicastIp();
+
+    const auto unicastGrp = ESPUI.addControl(ControlType::Text, "Unicast IP", unicastIp.toString(), ControlColor::None, artnetTabId, [this](Control *sender, int type)
+                                             {
+                                                 String newValue = sender->value;
+                                                 IPAddress newIp;
+                                                 if (newIp.fromString(newValue))
+                                                 {
+                                                     cfg->setUnicastIp(newIp);
+                                                 } });
+
+    unicastControls.push_back(unicastGrp);
+
+    const auto pingGroupId = ESPUI.addControl(ControlType::Tab, "Pins", "Pins");
 
     // Add entries for each configured pin
     const auto &pins = ioHandler.getIOConfig();
@@ -151,6 +95,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
                                                         : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>"); });
 
     enableNetworkConfig(!cfg->getUseDHCP());
+    enableUnicastConfig(cfg->getUseUnicast());
 
     ESPUI.begin("ArtNet GPIO");
 }
@@ -158,6 +103,14 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 void Ui::enableNetworkConfig(bool enable)
 {
     for (const auto &ctrl : networkControls)
+    {
+        ESPUI.setEnabled(ctrl, enable);
+    }
+}
+
+void Ui::enableUnicastConfig(bool enable)
+{
+    for (const auto &ctrl : unicastControls)
     {
         ESPUI.setEnabled(ctrl, enable);
     }

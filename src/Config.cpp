@@ -5,10 +5,12 @@ void Config::begin()
 {
     preferences.begin("cfg", false);
     useDHCP = preferences.getBool("useDHCP", true);
+    useUnicast = preferences.getBool("useUnicast", false);
     staticIp = preferences.getUInt("staticIp", 0);
     staticSubnet = preferences.getUInt("staticSubnet", 0);
     staticGateway = preferences.getUInt("staticGateway", 0);
     universe = preferences.getUShort("universe", 0);
+    unicastIp = preferences.getUInt("unicastIp", 0);
 }
 
 bool Config::getUseDHCP() const
@@ -76,6 +78,32 @@ void Config::setUniverse(uint16_t value)
     Serial.println(value);
 }
 
+bool Config::getUseUnicast() const
+{
+    return useUnicast;
+}
+
+void Config::setUseUnicast(bool value)
+{
+    useUnicast = value;
+    preferences.putBool("useUnicast", value);
+    Serial.print("new useUnicast: ");
+    Serial.println(value);
+}
+
+const IPAddress &Config::getUnicastIp() const
+{
+    return unicastIp;
+}
+
+void Config::setUnicastIp(const IPAddress &value)
+{
+    unicastIp = value;
+    preferences.putUInt("unicastIp", value);
+    Serial.print("new unicast ip: ");
+    Serial.println(value.toString());
+}
+
 void Config::print()
 {
     Serial.println("Config:");
@@ -89,4 +117,8 @@ void Config::print()
     Serial.println(staticGateway.toString());
     Serial.print("universe: ");
     Serial.println(universe);
+    Serial.print("useUnicast: ");
+    Serial.println(useUnicast);
+    Serial.print("unicastIp: ");
+    Serial.println(unicastIp.toString());
 }
