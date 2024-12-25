@@ -1,18 +1,21 @@
 #pragma once
-#include <ArtnetWiFi.h>
-#include <array>
+#include <WiFiGeneric.h>
+#include <DNSServer.h>
+#include "Config.hpp"
 
 class Network
 {
 public:
-    Network(uint16_t universe, const String &destination);
-
-    void setChannel(uint16_t channel, uint8_t value);
+    void begin(const Config &cfg, bool isHotspot);
     void update();
 
+    bool isConnected() const { return connected; }
+
+    IPAddress getBroadcastAddress() const;
+
 private:
-    uint16_t universe;
-    String destination;
-    std::array<uint8_t, 512> dmxData{};
-    ArtnetWiFiSender sender;
+    void handleNetworkEvent(WiFiEvent_t event);
+    bool connected = false;
+    DNSServer *dnsServer; // this is only used in hotspot mode
+    String hostname;
 };

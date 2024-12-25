@@ -5,7 +5,7 @@
 class Config
 {
 public:
-    Config(Preferences &preferences);
+    void begin();
 
     const IPAddress &getStaticIp() const;
     void setStaticIp(const IPAddress &ip);
@@ -25,7 +25,7 @@ public:
     void print();
 
 private:
-    Preferences &preferences;
+    Preferences preferences;
 
     IPAddress staticIp;
     IPAddress staticSubnet;

@@ -1,8 +1,9 @@
 #include "Config.hpp"
 #include <Preferences.h>
 
-Config::Config(Preferences &preferences) : preferences{preferences}
+void Config::begin()
 {
+    preferences.begin("cfg", false);
     useDHCP = preferences.getBool("useDHCP", true);
     staticIp = preferences.getUInt("staticIp", 0);
     staticSubnet = preferences.getUInt("staticSubnet", 0);
