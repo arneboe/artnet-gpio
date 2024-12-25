@@ -109,6 +109,10 @@ void Network::begin(const Config &cfg, bool isHotspot)
         WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t /*info*/)
                      { this->handleNetworkEvent(event); });
         ETH.begin(ETH_PHY_ADDR, ETH_PHY_POWER, ETH_PHY_MDC, ETH_PHY_MDIO, ETH_PHY_TYPE, ETH_CLK_MODE);
+        if (!cfg.getUseDHCP())
+        {
+            ETH.config(cfg.getStaticIp(), cfg.getStaticGateway(), cfg.getStaticSubnet());
+        }
     }
     MDNS.begin(hostname.c_str());
     MDNS.addService("artnet", "udp", 6454);

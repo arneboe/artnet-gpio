@@ -6,12 +6,15 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 
     const auto networkGroupId = ESPUI.addControl(ControlType::Tab, "Network Configuration", "Network Configuration");
 
-    ESPUI.addControl(ControlType::Label, "Info", "Changes to the configuration will take effect after restart.", ControlColor::None);
+    ESPUI.addControl(ControlType::Label, "Info", "Changes will take effect after restart.", ControlColor::None);
     ESPUI.addControl(ControlType::Button, "Restart", "Restart", ControlColor::Carrot, Control::noParent, [](Control *sender, int type)
                      { ESP.restart(); });
 
     ESPUI.addControl(ControlType::Switcher, "use DHCP", cfg->getUseDHCP() ? "1" : "0", ControlColor::None, networkGroupId, [this](Control *sender, int type)
-                     { cfg->setUseDHCP(sender->value.toInt() == 1); });
+                     {
+                        const bool use = sender->value.toInt() == 1;
+                         cfg->setUseDHCP(use);
+                         enableNetworkConfig(!use); });
 
     // Static IP controls
     const IPAddress &ip = cfg->getStaticIp();
@@ -20,6 +23,8 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto ip = cfg->getStaticIp();
         ip[0] = sender->value.toInt();
         cfg->setStaticIp(ip); });
+    networkControls.push_back(staticIpGrp);
+
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, staticIpGrp);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, staticIpGrp);
     const auto static1 = ESPUI.addControl(ControlType::Number, "", String(ip[1]), ControlColor::None, staticIpGrp, [this](Control *sender, int type)
@@ -27,6 +32,8 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto ip = cfg->getStaticIp();
         ip[1] = sender->value.toInt();
         cfg->setStaticIp(ip); });
+    networkControls.push_back(static1);
+
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static1);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static1);
     const auto static2 = ESPUI.addControl(ControlType::Number, "", String(ip[2]), ControlColor::None, staticIpGrp, [this](Control *sender, int type)
@@ -34,6 +41,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto ip = cfg->getStaticIp();
         ip[2] = sender->value.toInt();
         cfg->setStaticIp(ip); });
+    networkControls.push_back(static2);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static2);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static2);
 
@@ -42,6 +50,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto ip = cfg->getStaticIp();
         ip[3] = sender->value.toInt();
         cfg->setStaticIp(ip); });
+    networkControls.push_back(static3);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, static3);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, static3);
 
@@ -51,6 +60,9 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto subnet = cfg->getStaticSubnet();
         subnet[0] = sender->value.toInt();
         cfg->setStaticSubnet(subnet); });
+
+    networkControls.push_back(subnetGrp);
+
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnetGrp);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnetGrp);
     const auto subnet1 = ESPUI.addControl(ControlType::Number, "", String(subnet[1]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
@@ -58,6 +70,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto subnet = cfg->getStaticSubnet();
         subnet[1] = sender->value.toInt();
         cfg->setStaticSubnet(subnet); });
+    networkControls.push_back(subnet1);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet1);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet1);
     const auto subnet2 = ESPUI.addControl(ControlType::Number, "", String(subnet[2]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
@@ -65,6 +78,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto subnet = cfg->getStaticSubnet();
         subnet[2] = sender->value.toInt();
         cfg->setStaticSubnet(subnet); });
+    networkControls.push_back(subnet2);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet2);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet2);
     const auto subnet3 = ESPUI.addControl(ControlType::Number, "", String(subnet[3]), ControlColor::None, subnetGrp, [this](Control *sender, int type)
@@ -72,6 +86,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto subnet = cfg->getStaticSubnet();
         subnet[3] = sender->value.toInt();
         cfg->setStaticSubnet(subnet); });
+    networkControls.push_back(subnet3);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, subnet3);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, subnet3);
 
@@ -81,6 +96,8 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto gateway = cfg->getStaticGateway();
         gateway[0] = sender->value.toInt();
         cfg->setStaticGateway(gateway); });
+    networkControls.push_back(gatewayGrp);
+
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gatewayGrp);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gatewayGrp);
     const auto gateway1 = ESPUI.addControl(ControlType::Number, "", String(gateway[1]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
@@ -88,6 +105,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto gateway = cfg->getStaticGateway();
         gateway[1] = sender->value.toInt();
         cfg->setStaticGateway(gateway); });
+    networkControls.push_back(gateway1);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway1);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway1);
     const auto gateway2 = ESPUI.addControl(ControlType::Number, "", String(gateway[2]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
@@ -95,6 +113,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto gateway = cfg->getStaticGateway();
         gateway[2] = sender->value.toInt();
         cfg->setStaticGateway(gateway); });
+    networkControls.push_back(gateway2);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway2);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway2);
     const auto gateway3 = ESPUI.addControl(ControlType::Number, "", String(gateway[3]), ControlColor::None, gatewayGrp, [this](Control *sender, int type)
@@ -102,6 +121,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
         auto gateway = cfg->getStaticGateway();
         gateway[3] = sender->value.toInt();
         cfg->setStaticGateway(gateway); });
+    networkControls.push_back(gateway3);
     ESPUI.addControl(ControlType::Min, "", String(0), ControlColor::None, gateway3);
     ESPUI.addControl(ControlType::Max, "", String(255), ControlColor::None, gateway3);
 
@@ -130,5 +150,15 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
                                                newValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>"
                                                         : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>"); });
 
+    enableNetworkConfig(!cfg->getUseDHCP());
+
     ESPUI.begin("ArtNet GPIO");
+}
+
+void Ui::enableNetworkConfig(bool enable)
+{
+    for (const auto &ctrl : networkControls)
+    {
+        ESPUI.setEnabled(ctrl, enable);
+    }
 }
