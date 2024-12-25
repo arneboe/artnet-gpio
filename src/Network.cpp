@@ -112,6 +112,8 @@ void Network::begin(const Config &cfg, bool isHotspot)
     }
     MDNS.begin(hostname.c_str());
     MDNS.addService("artnet", "udp", 6454);
+
+    Serial.println("mDNS hostname: " + hostname + ".local");
 }
 
 IPAddress Network::getBroadcastAddress() const

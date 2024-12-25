@@ -14,7 +14,7 @@ public:
     using ChangedCb = std::function<void(uint8_t pin, uint8_t index, bool value)>;
 
     /// @brief  @note this will call the cb for each pin during construction
-    IOHandler();
+    void begin();
 
     void addChangedCb(ChangedCb cb);
 

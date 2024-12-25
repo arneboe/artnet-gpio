@@ -1,21 +1,22 @@
 #include "IOHandler.hpp"
 #include <Arduino.h>
 
-IOHandler::IOHandler()
+void IOHandler::begin()
 {
-    ioConfig[0] = {13, false};
-    ioConfig[1] = {4, false};
-    ioConfig[2] = {5, false};
-    ioConfig[3] = {18, false};
-    ioConfig[4] = {19, false};
-    ioConfig[5] = {21, false};
-    ioConfig[6] = {22, false};
-    ioConfig[7] = {23, false};
 
-    for (int i = 0; i < ioConfig.size(); i++)
+    ioConfig[0] = {39, false}; // no internal pulldown, need to add one
+    ioConfig[1] = {36, false}; // no internal pulldown, need to add one
+    ioConfig[2] = {35, false}; // no internal pulldown, need to add one
+    ioConfig[3] = {4, false};  // normal io
+    ioConfig[4] = {17, false}; // normal io but green eld
+    ioConfig[5] = {5, false};  // normal io but green eld
+    ioConfig[6] = {33, false}; // normal io
+    ioConfig[7] = {32, false}; // normal io
+
+    for (int i = 0; i < 8; i++)
     {
         auto &config = ioConfig[i];
-        pinMode(config.pin, INPUT_PULLUP);
+        pinMode(config.pin, INPUT_PULLDOWN); // pullup does not work properly on the WT32-ETH01
         config.currentValue = digitalRead(config.pin);
     }
 }
@@ -34,6 +35,7 @@ void IOHandler::update()
         bool newValue = digitalRead(pin.pin);
         if (newValue != pin.currentValue)
         {
+            Serial.printf("Pin %d changed to %d\n", pin.pin, newValue);
             pin.currentValue = newValue;
             for (const auto &cb : cbs)
             {

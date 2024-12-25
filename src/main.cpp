@@ -12,8 +12,8 @@ void setupHotspotMode();
 Config config;
 Network network;
 DMX dmx;
-IOHandler *ioHandler;
-Ui *ui;
+IOHandler ioHandler;
+Ui ui;
 
 void setup()
 {
@@ -26,17 +26,17 @@ void setup()
   // TODO check button for hotspot mode
   network.begin(config, false);
   dmx.begin(config, &network);
+  ioHandler.begin();
 
-  // ioHandler = new IOHandler();
   // ioHandler->addChangedCb([](uint8_t pin, uint8_t index, bool value)
   //                         { network->setChannel(index, value ? 255 : 0); });
 
-  // ui = new Ui(ioHandler, config);
+  ui.begin(ioHandler, &config);
 }
 
 void loop()
 {
-  // ioHandler->update();
-  network.update();
+  ioHandler.update();
   dmx.update();
+  network.update();
 }

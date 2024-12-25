@@ -6,7 +6,7 @@
 class Ui
 {
 public:
-    Ui(IOHandler *ioHandler, Config *cfg);
+    void begin(IOHandler &ioHandler, Config *cfg);
 
 private:
     Config *cfg;
