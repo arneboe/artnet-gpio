@@ -4,6 +4,8 @@ void DMX::begin(const Config &cfg, const Network *_network)
 {
     universe = cfg.getUniverse();
     network = _network;
+    useUnicast = cfg.getUseUnicast();
+    unicastDestination = cfg.getUnicastIp().toString();
     sender.begin();
     sender.setArtDmxData(dmxData.data(), dmxData.size());
 }
@@ -17,8 +19,14 @@ void DMX::update()
 {
     if (network->isConnected())
     {
-        const String destination = network->getBroadcastAddress().toString();
         sender.setArtDmxData(dmxData.data(), dmxData.size());
-        sender.streamArtDmxTo(destination, universe);
+        if (useUnicast)
+        {
+            sender.streamArtDmxTo(unicastDestination, universe);
+        }
+        else
+        {
+            sender.streamArtDmxTo(network->getBroadcastAddress().toString(), universe);
+        }
     }
 }

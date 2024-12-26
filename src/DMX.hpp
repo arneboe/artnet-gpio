@@ -13,8 +13,9 @@ public:
     void update();
 
 private:
-    uint16_t universe;
-    String destination;
+    bool useUnicast = false;
+    String unicastDestination;
+    uint16_t universe = 0;
     std::array<uint8_t, 512> dmxData{};
     ArtnetSender sender;
     const Network *network;
