@@ -11,7 +11,8 @@ public:
         uint8_t pin;
         bool currentValue;
     };
-    using ChangedCb = std::function<void(uint8_t pin, uint8_t index, bool value)>;
+    /** @param index The index in the ioConfig array that has changed */
+    using ChangedCb = std::function<void(uint8_t index, bool value)>;
 
     /// @brief  @note this will call the cb for each pin during construction
     void begin();
@@ -20,7 +21,7 @@ public:
 
     void update();
 
-    const std::array<IOConfig, 8> &getIOConfig() const
+    const std::array<IOConfig, 4> &getIOConfig() const
     {
         return ioConfig;
     }
@@ -28,5 +29,5 @@ public:
 private:
     std::vector<ChangedCb> cbs;
 
-    std::array<IOConfig, 8> ioConfig;
+    std::array<IOConfig, 4> ioConfig;
 };

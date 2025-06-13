@@ -6,7 +6,7 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 
     const auto networkGroupId = ESPUI.addControl(ControlType::Tab, "Network", "Network");
 
-    ESPUI.addControl(ControlType::Label, "Info", "Changes will take effect after restart.", ControlColor::None);
+    ESPUI.addControl(ControlType::Label, "Info", "Network and artnet changes will take effect after restart. Pin changes take effect immediately.", ControlColor::None);
     ESPUI.addControl(ControlType::Button, "Restart", "Restart", ControlColor::Carrot, Control::noParent, [](Control *sender, int type)
                      { ESP.restart(); });
 
@@ -77,19 +77,39 @@ void Ui::begin(IOHandler &ioHandler, Config *_cfg)
 
     const auto pingGroupId = ESPUI.addControl(ControlType::Tab, "Pins", "Pins");
 
-    // Add entries for each configured pin
     const auto &pins = ioHandler.getIOConfig();
     for (size_t i = 0; i < pins.size(); i++)
     {
-        const auto labelGrp = ESPUI.addControl(ControlType::Label, "", "Pin " + String(pins[i].pin) + " (DMX Address " + String(i) + ")", ControlColor::None, pingGroupId);
+        const auto pinGroup = ESPUI.addControl(ControlType::Label, "", "Pin " + String(i), ControlColor::None, pingGroupId);
+
+        ESPUI.addControl(ControlType::Label, "", "DMX Address", ControlColor::None, pinGroup);
+        const auto addrCtrl = ESPUI.addControl(ControlType::Number, "DMX Address", String(cfg->getPinAddress(i)), ControlColor::None, pinGroup,
+                                               [this, i](Control *sender, int type)
+                                               { cfg->setPinAddress(i, sender->value.toInt()); });
+        ESPUI.addControl(ControlType::Min, "", "0", ControlColor::None, addrCtrl);
+        ESPUI.addControl(ControlType::Max, "", "511", ControlColor::None, addrCtrl);
+
+        ESPUI.addControl(ControlType::Label, "", "Low Value", ControlColor::None, pinGroup);
+        const auto lowCtrl = ESPUI.addControl(ControlType::Number, "Low Value", String(cfg->getPinLowValue(i)), ControlColor::None, pinGroup,
+                                              [this, i](Control *sender, int type)
+                                              { cfg->setPinLowValue(i, sender->value.toInt()); });
+        ESPUI.addControl(ControlType::Min, "", "0", ControlColor::None, lowCtrl);
+        ESPUI.addControl(ControlType::Max, "", "255", ControlColor::None, lowCtrl);
+
+        ESPUI.addControl(ControlType::Label, "", "High Value", ControlColor::None, pinGroup);
+        const auto highCtrl = ESPUI.addControl(ControlType::Number, "High Value", String(cfg->getPinHighValue(i)), ControlColor::None, pinGroup,
+                                               [this, i](Control *sender, int type)
+                                               { cfg->setPinHighValue(i, sender->value.toInt()); });
+        ESPUI.addControl(ControlType::Min, "", "0", ControlColor::None, highCtrl);
+        ESPUI.addControl(ControlType::Max, "", "255", ControlColor::None, highCtrl);
 
         pinStatusLabels[i] = ESPUI.addControl(ControlType::Label, "Status",
-                                              pins[i].currentValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>" : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>",
-                                              ControlColor::None, labelGrp);
+                                              pins[i].currentValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>"
+                                                                   : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>",
+                                              ControlColor::None, pinGroup);
     }
 
-    // Register callback to update labels when pins change
-    ioHandler.addChangedCb([this](uint8_t pin, uint8_t index, bool newValue)
+    ioHandler.addChangedCb([this](uint8_t index, bool newValue)
                            { ESPUI.updateLabel(this->pinStatusLabels[index],
                                                newValue ? "<div style='background-color: #4CAF50; padding: 5px; color: white;'>HIGH</div>"
                                                         : "<div style='background-color: #f44336; padding: 5px; color: white;'>LOW</div>"); });

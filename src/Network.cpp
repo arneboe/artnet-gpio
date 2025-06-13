@@ -29,8 +29,6 @@
 #include <Arduino.h>
 #include <ESPmDNS.h>
 
-#define AP_SSID "ArtNet-GPIO"
-
 void Network::handleNetworkEvent(WiFiEvent_t event)
 {
     Serial.println("WiFi event: " + String(event));
@@ -91,7 +89,7 @@ void Network::begin(const Config &cfg, bool isHotspot)
     if (isHotspot)
     {
         WiFi.mode(WIFI_AP);
-        WiFi.softAP(AP_SSID); // Remove password parameter to create an open network
+        WiFi.softAP(hostname); // Remove password parameter to create an open network
 
         Serial.println("Access Point Mode");
         Serial.print("AP IP address: ");

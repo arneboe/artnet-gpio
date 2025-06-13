@@ -5,9 +5,7 @@
 #include "Ui.hpp"
 #include "Network.hpp"
 
-// put function declarations here:
-void setupNormalMode(Config *cfg);
-void setupHotspotMode();
+#define HOTSPOT_PIN 32 // GPIO 32 is used to detect if we are in hotspot mode, this is the "cfg" pin
 
 Config config;
 Network network;
@@ -20,16 +18,31 @@ void setup()
   Serial.begin(115200);
   Serial.println("Starting gpio artnet sender");
 
-  config.begin();
+  config.begin(ioHandler.getIOConfig().size());
   config.print();
 
-  // TODO check button for hotspot mode
-  network.begin(config, false);
+  pinMode(HOTSPOT_PIN, INPUT_PULLUP); // this is the green led, but we use it as jumper to detect hotspot mode
+  if (digitalRead(HOTSPOT_PIN) == LOW)
+  {
+    network.begin(config, true);
+    Serial.println("Starting in hotspot mode");
+  }
+  else
+  {
+    network.begin(config, false);
+    Serial.println("Starting in normal mode");
+  }
+
   dmx.begin(config, &network);
   ioHandler.begin();
 
-  // ioHandler->addChangedCb([](uint8_t pin, uint8_t index, bool value)
-  //                         { network->setChannel(index, value ? 255 : 0); });
+  ioHandler.addChangedCb([](uint8_t index, bool isPressed)
+                         {
+                            const uint8_t pinValue = isPressed ? config.getPinHighValue(index) : config.getPinLowValue(index);
+                            const uint16_t pinAddress = config.getPinAddress(index);
+
+
+                           dmx.setChannel(pinAddress, pinValue); });
 
   ui.begin(ioHandler, &config);
 }

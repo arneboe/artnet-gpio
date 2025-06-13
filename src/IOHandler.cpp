@@ -8,20 +8,21 @@ void IOHandler::begin()
     ioConfig[1] = {36, false}; // no internal pulldown, need to add one
     ioConfig[2] = {35, false}; // no internal pulldown, need to add one
     ioConfig[3] = {4, false};  // normal io
-    ioConfig[4] = {17, false}; // normal io but green eld
-    ioConfig[5] = {5, false};  // normal io but green eld
-    ioConfig[6] = {33, false}; // normal io
-    ioConfig[7] = {32, false}; // normal io
+    // ioConfig[4] = {17, false}; // normal io but green eld
+    // ioConfig[5] = {5, false};  // normal io but green eld
+    // ioConfig[4] = {33, false}; // normal io
+    // ioConfig[5] = {32, false}; // normal io
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < ioConfig.size(); i++)
     {
         auto &config = ioConfig[i];
-        pinMode(config.pin, INPUT_PULLDOWN); // pullup does not work properly on the WT32-ETH01
+        pinMode(config.pin, INPUT_PULLUP);
         config.currentValue = digitalRead(config.pin);
     }
 }
 
 void IOHandler::addChangedCb(ChangedCb cb)
+
 {
     cbs.push_back(cb);
 }
@@ -39,7 +40,7 @@ void IOHandler::update()
             pin.currentValue = newValue;
             for (const auto &cb : cbs)
             {
-                cb(pin.pin, i, pin.currentValue);
+                cb(i, pin.currentValue);
             }
         }
     }
